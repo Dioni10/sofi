@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Care nalga</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Great+Vibes&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at center, #1e1b10 0%, #0d0c08 100%);
+            color: #fef08a;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        .font-cursive {
+            font-family: 'Great Vibes', cursive;
+        }
+        .font-title {
+            font-family: 'Cinzel', serif;
+        }
+        
+        /* Canvas de partículas mágicas de fondo */
+        #magic-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Capa para la lluvia de flores al reproducir música */
+        #flower-rain-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            overflow: hidden;
+        }
+
+        .falling-flower {
+            position: absolute;
+            top: -50px;
+            user-select: none;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(105vh) rotate(360deg);
+                opacity: 0.2;
+            }
+        }
+
+        /* Tarjeta con efecto cristal moderno */
+        .glass-card {
+            background: rgba(30, 27, 16, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(234, 179, 8, 0.35);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(234, 179, 8, 0.25);
+        }
+
+        /* Animación suave de vaivén para el ramo completo */
+        .bouquet-sway {
+            transform-origin: bottom center;
+            animation: swayBouquet 7s ease-in-out infinite;
+        }
+        @keyframes swayBouquet {
+            0%, 100% { transform: rotate(0deg) translateY(0); }
+            50% { transform: rotate(1.8deg) translateY(-6px); }
+        }
+
+        /* Destellos dorados generales */
+        .glow-gold {
+            filter: drop-shadow(0 0 20px rgba(253, 224, 71, 0.75));
+        }
+
+        .btn-magic {
+            background: linear-gradient(135deg, #eab308 0%, #ca8a04 50%, #a16207 100%);
+            box-shadow: 0 0 25px rgba(234, 179, 8, 0.5);
+            transition: all 0.3s ease;
+        }
+        .btn-magic:hover {
+            box-shadow: 0 0 35px rgba(250, 204, 21, 0.85);
+            transform: translateY(-2px);
+        }
+
+        .flower-item {
+            transition: transform 0.4s ease;
+            cursor: pointer;
+        }
+        .flower-item:hover {
+            transform: scale(1.06);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4 relative selection:bg-yellow-500 selection:text-black">
+
+    <canvas id="magic-canvas"></canvas>
+    <div id="flower-rain-container"></div>
+
+    <!-- Contenedor Principal de la Tarjeta -->
+    <div class="relative z-10 max-w-2xl w-full mx-auto my-6 glass-card rounded-3xl p-6 sm:p-10 text-center border border-yellow-500/30">
+        
+        <div class="mb-4">
+            <span class="inline-block text-xs uppercase tracking-widest text-yellow-300 font-semibold mb-2 px-3.5 py-1 bg-yellow-500/10 rounded-full border border-yellow-500/25">
+                <i class="fa-solid fa-sparkles mr-1.5 text-yellow-300"></i> Para mi querida care nalga          </span>
+            <h1 class="font-cursive text-5xl sm:text-6xl text-yellow-300 mb-1 glow-gold">Tus Flores Amarillas</h1>
+            <p class="font-title text-xs sm:text-sm tracking-wider text-yellow-100/75">Una forma de gratiud para ti🌻</p>
+        </div>
+
+        <div class="bouquet-sway my-6 relative flex justify-center items-center py-2" onclick="triggerMagicBurst(event)">
+            <svg class="w-76 h-88 sm:w-96 sm:h-[420px] glow-gold" viewBox="0 0 550 560" xmlns="http://www.w3.org/2000/svg">
+                
+                <defs>
+                    <linearGradient id="stemGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#4ade80" />
+                        <stop offset="50%" stop-color="#16a34a" />
+                        <stop offset="100%" stop-color="#14532d" />
+                    </linearGradient>
+                    
+                    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#86efac" />
+                        <stop offset="100%" stop-color="#15803d" />
+                    </linearGradient>
+
+                    <linearGradient id="petalSunflower" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#fef08a" />
+                        <stop offset="40%" stop-color="#facc15" />
+                        <stop offset="100%" stop-color="#ca8a04" />
+                    </linearGradient>
+
+                    <linearGradient id="petalRose" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#fffbeb" />
+                        <stop offset="50%" stop-color="#fde047" />
+                        <stop offset="100%" stop-color="#eab308" />
+                    </linearGradient>
+
+                    <linearGradient id="ribbonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#f59e0b" />
+                        <stop offset="30%" stop-color="#fef08a" />
+                        <stop offset="70%" stop-color="#facc15" />
+                        <stop offset="100%" stop-color="#b45309" />
+                    </linearGradient>
+
+                    <radialGradient id="centerSunflower" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#291102" />
+                        <stop offset="45%" stop-color="#451a03" />
+                        <stop offset="75%" stop-color="#78350f" />
+                        <stop offset="100%" stop-color="#3d1802" />
+                    </radialGradient>
+
+                    <radialGradient id="softGlow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#fef08a" stop-opacity="0.6"/>
+                        <stop offset="100%" stop-color="#ca8a04" stop-opacity="0"/>
+                    </radialGradient>
+
+                    <filter id="deepShadow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="2" dy="6" stdDeviation="5" flood-color="#000" flood-opacity="0.55"/>
+                    </filter>
+                </defs>
+
+                <circle cx="275" cy="230" r="150" fill="url(#softGlow)"/>
+
+                <g filter="url(#deepShadow)">
+                    <path d="M275 250 Q265 370 230 480" fill="none" stroke="url(#stemGrad)" stroke-width="9" stroke-linecap="round"/>
+                    <path d="M275 250 Q285 370 320 480" fill="none" stroke="url(#stemGrad)" stroke-width="9" stroke-linecap="round"/>
+                    <path d="M275 250 Q215 340 160 440" fill="none" stroke="url(#stemGrad)" stroke-width="7" stroke-linecap="round"/>
+                    <path d="M275 250 Q335 340 390 440" fill="none" stroke="url(#stemGrad)" stroke-width="7" stroke-linecap="round"/>
+                    <path d="M275 250 Q275 360 275 500" fill="none" stroke="url(#stemGrad)" stroke-width="11" stroke-linecap="round"/>
+
+                    <path d="M190 350 Q120 330 110 375 Q160 400 190 350" fill="url(#leafGrad)"/>
+                    <path d="M150 360 Q130 355 125 370" fill="none" stroke="#86efac" stroke-width="2"/>
+
+                    <path d="M360 350 Q430 330 440 375 Q390 400 360 350" fill="url(#leafGrad)"/>
+                    <path d="M400 360 Q420 355 425 370" fill="none" stroke="#86efac" stroke-width="2"/>
+
+                    <path d="M230 420 Q170 410 165 445 Q210 460 230 420" fill="url(#leafGrad)"/>
+                    <path d="M320 420 Q380 410 385 445 Q340 460 320 420" fill="url(#leafGrad)"/>
+                </g>
+
+                <!-- Rosa Amarilla Izquierda -->
+                <g class="flower-item" transform="translate(140, 140)" filter="url(#deepShadow)">
+                    <circle cx="0" cy="0" r="32" fill="#ca8a04"/>
+                    <circle cx="-3" cy="-3" r="26" fill="url(#petalRose)" opacity="0.9"/>
+                    <path d="M-15 -10 C-5 -25 15 -15 10 5 C5 20 -15 15 -12 0" fill="none" stroke="#ca8a04" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="0" cy="0" r="14" fill="#facc15"/>
+                    <circle cx="0" cy="0" r="7" fill="#854d0e"/>
+                </g>
+
+                <!-- Rosa Amarilla Derecha -->
+                <g class="flower-item" transform="translate(410, 140)" filter="url(#deepShadow)">
+                    <circle cx="0" cy="0" r="32" fill="#ca8a04"/>
+                    <circle cx="3" cy="-3" r="26" fill="url(#petalRose)" opacity="0.9"/>
+                    <path d="M15 -10 C5 -25 -15 -15 -10 5 C-5 20 15 15 12 0" fill="none" stroke="#ca8a04" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="0" cy="0" r="14" fill="#facc15"/>
+                    <circle cx="0" cy="0" r="7" fill="#854d0e"/>
+                </g>
+
+                <!-- Margaritas Finas -->
+                <g class="flower-item" transform="translate(190, 85)" filter="url(#deepShadow)">
+                    <g fill="#fef08a">
+                        <ellipse cx="0" cy="-20" rx="6" ry="16"/> <ellipse cx="0" cy="20" rx="6" ry="16"/>
+                        <ellipse cx="-20" cy="0" rx="16" ry="6"/> <ellipse cx="20" cy="0" rx="16" ry="6"/>
+                        <ellipse cx="-14" cy="-14" rx="6" ry="16" transform="rotate(45 -14 -14)"/>
+                        <ellipse cx="14" cy="14" rx="6" ry="16" transform="rotate(45 14 14)"/>
+                        <ellipse cx="14" cy="-14" rx="6" ry="16" transform="rotate(-45 14 -14)"/>
+                        <ellipse cx="-14" cy="14" rx="6" ry="16" transform="rotate(-45 -14 14)"/>
+                    </g>
+                    <circle cx="0" cy="0" r="11" fill="#f59e0b"/>
+                    <circle cx="0" cy="0" r="7" fill="#b45309"/>
+                </g>
+
+                <g class="flower-item" transform="translate(360, 85)" filter="url(#deepShadow)">
+                    <g fill="#fef08a">
+                        <ellipse cx="0" cy="-20" rx="6" ry="16"/> <ellipse cx="0" cy="20" rx="6" ry="16"/>
+                        <ellipse cx="-20" cy="0" rx="16" ry="6"/> <ellipse cx="20" cy="0" rx="16" ry="6"/>
+                        <ellipse cx="-14" cy="-14" rx="6" ry="16" transform="rotate(45 -14 -14)"/>
+                        <ellipse cx="14" cy="14" rx="6" ry="16" transform="rotate(45 14 14)"/>
+                        <ellipse cx="14" cy="-14" rx="6" ry="16" transform="rotate(-45 14 -14)"/>
+                        <ellipse cx="-14" cy="14" rx="6" ry="16" transform="rotate(-45 -14 14)"/>
+                    </g>
+                    <circle cx="0" cy="0" r="11" fill="#f59e0b"/>
+                    <circle cx="0" cy="0" r="7" fill="#b45309"/>
+                </g>
+
+                <g class="flower-item" transform="translate(205, 215)" filter="url(#deepShadow)">
+                    <circle cx="0" cy="0" r="22" fill="url(#petalSunflower)"/>
+                    <circle cx="0" cy="0" r="10" fill="#78350f"/>
+                </g>
+                <g class="flower-item" transform="translate(345, 215)" filter="url(#deepShadow)">
+                    <circle cx="0" cy="0" r="22" fill="url(#petalSunflower)"/>
+                    <circle cx="0" cy="0" r="10" fill="#78350f"/>
+                </g>
+
+                <!-- GIRASOL PRINCIPAL -->
+                <g class="flower-item" transform="translate(275, 140)" filter="url(#deepShadow)">
+                    <g fill="#ca8a04">
+                        <ellipse cx="0" cy="-78" rx="15" ry="48" transform="rotate(15)"/>
+                        <ellipse cx="0" cy="-78" rx="15" ry="48" transform="rotate(45)"/>
+                        <ellipse cx="0" cy="-78" rx="15" ry="48" transform="rotate(75)"/>
+                        <ellipse cx="0" cy="-78" rx="15" ry="48" transform="rotate(105)"/>
+                        <ellipse cx="0" cy="-78" rx="15" ry="48" transform="rotate(135)"/>
+                        <ellipse cx="0" cy="-78" rx="15" ry="48" transform="rotate(165)"/>
+                        <ellipse cx="0" cy="-78" rx="15" ry="48" transform="rotate(195)"/>
+                        <ellipse cx="0" cy="-78" rx="15" ry="48" transform="rotate(225)"/>
+                        <ellipse cx="0" cy="-78" rx="15" ry="48" transform="rotate(255)"/>
+                        <ellipse cx="0" cy="-78" rx="15" ry="48" transform="rotate(285)"/>
+                        <ellipse cx="0" cy="-78" rx="15" ry="48" transform="rotate(315)"/>
+                        <ellipse cx="0" cy="-78" rx="15" ry="48" transform="rotate(345)"/>
+                    </g>
+                    <g fill="url(#petalSunflower)">
+                        <ellipse cx="0" cy="-72" rx="16" ry="45" transform="rotate(0)"/>
+                        <ellipse cx="0" cy="-72" rx="16" ry="45" transform="rotate(30)"/>
+                        <ellipse cx="0" cy="-72" rx="16" ry="45" transform="rotate(60)"/>
+                        <ellipse cx="0" cy="-72" rx="16" ry="45" transform="rotate(90)"/>
+                        <ellipse cx="0" cy="-72" rx="16" ry="45" transform="rotate(120)"/>
+                        <ellipse cx="0" cy="-72" rx="16" ry="45" transform="rotate(150)"/>
+                        <ellipse cx="0" cy="-72" rx="16" ry="45" transform="rotate(180)"/>
+                        <ellipse cx="0" cy="-72" rx="16" ry="45" transform="rotate(210)"/>
+                        <ellipse cx="0" cy="-72" rx="16" ry="45" transform="rotate(240)"/>
+                        <ellipse cx="0" cy="-72" rx="16" ry="45" transform="rotate(270)"/>
+                        <ellipse cx="0" cy="-72" rx="16" ry="45" transform="rotate(300)"/>
+                        <ellipse cx="0" cy="-72" rx="16" ry="45" transform="rotate(330)"/>
+                    </g>
+                    <circle cx="0" cy="0" r="44" fill="url(#centerSunflower)"/>
+                    <circle cx="0" cy="0" r="36" fill="none" stroke="#381301" stroke-width="4" stroke-dasharray="6,4"/>
+                    <circle cx="0" cy="0" r="26" fill="none" stroke="#522003" stroke-width="5" stroke-dasharray="5,3"/>
+                    <circle cx="0" cy="0" r="16" fill="#240c01"/>
+                    
+                    <circle cx="-10" cy="-12" r="2.5" fill="#fde047" opacity="0.85"/>
+                    <circle cx="12" cy="-14" r="2" fill="#fde047" opacity="0.9"/>
+                    <circle cx="-14" cy="8" r="2" fill="#fde047" opacity="0.8"/>
+                    <circle cx="15" cy="12" r="2.5" fill="#fde047" opacity="0.9"/>
+                    <circle cx="0" cy="4" r="2" fill="#fde047" opacity="0.95"/>
+                </g>
+
+                <!-- ENVOLTURA Y LAZO -->
+                <g filter="url(#deepShadow)">
+                    <path d="M180 320 L275 510 L370 320 Z" fill="#fef9c3" opacity="0.9"/>
+                    <path d="M160 270 Q275 235 390 270 L330 520 L220 520 Z" fill="#fef08a" opacity="0.95"/>
+                    <path d="M275 250 L235 520" stroke="#ca8a04" stroke-width="1.5" opacity="0.3"/>
+                    <path d="M275 250 L315 520" stroke="#ca8a04" stroke-width="1.5" opacity="0.3"/>
+                    <path d="M160 270 L220 520" stroke="#ca8a04" stroke-width="1" opacity="0.2"/>
+                    <path d="M390 270 L330 520" stroke="#ca8a04" stroke-width="1" opacity="0.2"/>
+                </g>
+
+                <g filter="url(#deepShadow)">
+                    <path d="M275 440 C220 420 170 460 210 495 C235 515 260 460 275 440 Z" fill="url(#ribbonGrad)"/>
+                    <path d="M275 440 C330 420 380 460 340 495 C315 515 290 460 275 440 Z" fill="url(#ribbonGrad)"/>
+                    <ellipse cx="275" cy="445" rx="20" ry="14" fill="#92400e"/>
+                    <ellipse cx="275" cy="445" rx="13" ry="9" fill="#fbbf24"/>
+                    <path d="M262 455 Q230 510 205 545 L225 550 Q250 500 282 470 Z" fill="url(#ribbonGrad)"/>
+                    <path d="M288 455 Q320 510 345 545 L325 550 Q300 500 268 470 Z" fill="url(#ribbonGrad)"/>
+                </g>
+
+            </svg>
+            <div class="absolute bottom-1 text-[11px] text-yellow-200/70 bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm pointer-events-none">
+                <i class="fa-solid fa-hand-pointer mr-1"></i> Toca el ramo para activar magia
+            </div>
+        </div>
+
+        <div class="bg-black/30 backdrop-blur-md rounded-2xl p-5 border border-yellow-500/20 text-left mb-6 shadow-inner">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-title tracking-wider text-yellow-300 font-semibold uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-pen-fancy"></i> Mensaje para la chibi😊:
+                </span>
+            </div>
+            <p class="w-full bg-yellow-950/20 border border-yellow-500/30 rounded-xl p-3 text-yellow-100 text-sm font-sans leading-relaxed select-none">
+                Quiero regalarte este detallito para agradecerte de todo corazón el haber estado conmigo en ese momento. No es mucho, pero al menos quería hacer algo para ti. Espero seguir pasando más tiempo contigo haciendo cualquier cosa, jaja. Me caes muy bien y pues esdivertido pasar tiempo contigo viendo algo, jugando o hablando de cualquier cosa 🌻😊🐶.
+            </p>
+        </div>
+
+        <!-- Elemento de audio HTML5 -->
+        <audio id="bgMusic" preload="auto">
+            <source src="S.mp3" type="audio/mp3">
+            Tu navegador no soporta el elemento de audio.
+        </audio>
+
+        <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <button onclick="toggleMusic()" id="musicBtn" class="btn-magic w-full px-6 py-3.5 rounded-xl text-yellow-950 font-bold text-sm tracking-wide flex items-center justify-center gap-2 cursor-pointer shadow-lg">
+                <i class="fa-solid fa-music text-yellow-950" id="musicIcon"></i> <span id="musicBtnText">Reproducir canción 🎵</span>
+            </button>
+        </div>
+
+        <!-- Pie de página -->
+        <div class="mt-8 text-xs text-yellow-200/50 font-title tracking-widest">
+            HECHO CON ODIO Y GRATITUD • 💛 🌻 ✨
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('magic-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor(x, y, customSpeed = 1) {
+                this.x = x || Math.random() * width;
+                this.y = y || Math.random() * height;
+                this.size = Math.random() * 3.5 + 1;
+                this.speedX = (Math.random() - 0.5) * 1.5 * customSpeed;
+                this.speedY = (Math.random() - 0.7) * 2 * customSpeed - 0.5;
+                this.color = Math.random() > 0.3 ? '#facc15' : '#fde047';
+                this.alpha = Math.random() * 0.8 + 0.2;
+                this.decay = Math.random() * 0.008 + 0.003;
+                this.angle = Math.random() * Math.PI * 2;
+                this.spin = (Math.random() - 0.5) * 0.05;
+            }
+
+            update() {
+                this.x += this.speedX + Math.sin(this.angle) * 0.5;
+                this.y += this.speedY;
+                this.angle += this.spin;
+                this.alpha -= this.decay;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = '#facc15';
+                ctx.shadowBlur = 10;
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < 75; i++) {
+            particles.push(new Particle(null, Math.random() * height, 0.5));
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            if (particles.length < 95 && Math.random() < 0.35) {
+                particles.push(new Particle(Math.random() * width, height + 10, 0.6));
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+
+                if (particles[i].alpha <= 0 || particles[i].y < -20) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        function triggerMagicBurst(event) {
+            const rect = event.currentTarget.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            
+            for (let i = 0; i < 40; i++) {
+                const p = new Particle(cx, cy, 2.5);
+                p.speedX = (Math.random() - 0.5) * 7;
+                p.speedY = (Math.random() - 0.5) * 7;
+                particles.push(p);
+            }
+        }
+
+        // Función para crear la lluvia de flores amarillas
+        let flowerRainInterval = null;
+
+        function startFlowerRain() {
+            const container = document.getElementById('flower-rain-container');
+            const flowerSymbols = ['🌻', '🌼', '💛', '✨'];
+
+            flowerRainInterval = setInterval(() => {
+                const flower = document.createElement('div');
+                flower.classList.add('falling-flower');
+                flower.innerText = flowerSymbols[Math.floor(Math.random() * flowerSymbols.length)];
+                
+                // Posición aleatoria horizontal, tamaño y duración de caída
+                flower.style.left = Math.random() * window.innerWidth + 'px';
+                flower.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                
+                const duration = Math.random() * 3 + 2; // entre 2 y 5 segundos
+                flower.style.animationDuration = duration + 's';
+
+                container.appendChild(flower);
+
+                // Eliminar el elemento del DOM al terminar la animación
+                setTimeout(() => {
+                    flower.remove();
+                }, duration * 1000);
+            }, 150); // Genera una flor cada 150 milisegundos
+        }
+
+        function stopFlowerRain() {
+            clearInterval(flowerRainInterval);
+        }
+
+        function toggleMusic() {
+            const audio = document.getElementById('bgMusic');
+            const btnText = document.getElementById('musicBtnText');
+            const icon = document.getElementById('musicIcon');
+
+            if (audio.paused) {
+                audio.play().then(() => {
+                    btnText.innerText = 'Pausar canción ⏸';
+                    icon.className = 'fa-solid fa-pause text-yellow-950';
+                    startFlowerRain(); // Inicia la lluvia de flores al reproducir
+                }).catch(error => {
+                    console.error("Error al reproducir audio:", error);
+                    alert("Asegúrate de colocar un archivo válido como 'S.mp3' en tu proyecto.");
+                });
+            } else {
+                audio.pause();
+                btnText.innerText = 'Reproducir canción 🎵';
+                icon.className = 'fa-solid fa-music text-yellow-950';
+                stopFlowerRain(); // Detiene la lluvia de flores al pausar
+            }
+        }
+    </script>
+</body>
+</html>
